@@ -378,7 +378,7 @@ SEGS = [
     ("BAYER_8x8", m_bayer, "render mv --mode bayer_8x8", None),
     ("THERMAL", m_thermal, "render mv --mode thermal   # crowd temp: critical", "sudo rm -rf ~/fake_rappers  ✓"),
     ("MIRROR", m_mirror, "render mv --mode mirror --axis both", None),
-    ("GLITCH", m_glitch, "render mv --mode glitch --stutter", "ping azadi.records  → 0% loss  ✓"),
+    ("GLITCH", m_glitch, "render mv --mode glitch --stutter", "ping seedhe.maut  → 0% loss  ✓"),
     ("ECHO", m_echo, "render mv --mode echo --trail 15", None),
     ("GLYPH_म", m_glyph_m, "render mv --mode glyph_म", "git commit -m 'seedhe maut never miss'  ✓"),
     ("BLOOD", m_blood, "render mv --mode blood   # सीधे मौत", None),
@@ -396,9 +396,9 @@ def seg_at(t):
 # ----------------------------------------------------------------------------
 def build_log():
     ev = [(0.5, "claude: open ~/seedhe_maut/"),
-          (1.7, "2 members · encore abj × calm · azadi records"),
+          (1.7, "2 members · encore abj × calm · track: namastute"),
           (6.3, "ls ~/seedhe_maut/ --sort hype"),
-          (10.9, "play azadi.mp4 --from 0:12 --mode chaos")]
+          (10.9, "play namastute.mp4 --from 0:12 --mode chaos")]
     bt = AU["beats"]
     for k, (_, _, cmd, extra) in enumerate(SEGS):
         s = float(bt[B0 + 8 * k])
@@ -433,7 +433,7 @@ def draw_log(d, t, x=22, y0=26, n=3):
 # ----------------------------------------------------------------------------
 GLYPH_M = None
 TBL_ROWS = [("2 Ka Pahada", "2017", 62), ("Bayaan", "2018", 71), ("न", "2021", 86),
-            ("Nayaab", "2022", 93), ("Lunch Break", "2023", 97), ("azadi.mp4", "NOW", 999)]
+            ("Nayaab", "2022", 93), ("Lunch Break", "2023", 97), ("Namastute", "NOW", 999)]
 
 
 def ease(x):
@@ -472,7 +472,7 @@ def scene_intro(t, fi):
         a = int(255 * ease((t - 3.0) / .4))
         s1 = "[ म ]  SEEDHE MAUT  ·  DELHI"
         draw_tracked(d, W / 2 - tracked_w(s1, 14) / 2, H / 2 - 175, s1, 14, ORANGE_I + (a,))
-        s2 = "ENCORE ABJ  ×  CALM  ·  AZADI RECORDS"
+        s2 = "ENCORE ABJ  ×  CALM  ·  NAMASTUTE"
         draw_tracked(d, W / 2 - tracked_w(s2, 14, 4, True) / 2, H / 2 + 185, s2, 14, WHITE_I + (a,), 4, True)
     if t >= 6.2:
         draw_table(d, t)
@@ -561,7 +561,7 @@ def draw_hud(d, t, mode):
     for x, y, sx, sy in ((m, m, 1, 1), (W - m, m, -1, 1), (m, H - m, 1, -1), (W - m, H - m, -1, -1)):
         d.line([(x, y), (x + sx * L, y)], fill=(255, 255, 255, 110), width=2)
         d.line([(x, y), (x, y + sy * L)], fill=(255, 255, 255, 110), width=2)
-    draw_tracked(d, 22, 86, f"{fmt(t)}  ·  SEEDHE MAUT  ·  AZADI RECORDS", 11, (200, 200, 200), 2)
+    draw_tracked(d, 22, 86, f"{fmt(t)}  ·  SEEDHE MAUT  ·  NAMASTUTE", 11, (200, 200, 200), 2)
     # render mode
     draw_tracked(d, W - 150, 34, "RENDER MODE", 10, (190, 190, 190), 2)
     lab = "▶ " + mode
@@ -813,7 +813,7 @@ def scene_tera(t, fi, get):
     pil = Image.fromarray((img * 255).astype(np.uint8))
     d = ImageDraw.Draw(pil, "RGBA")
     draw_log(d, t)
-    draw_tracked(d, 56, H - 470, "AZADI RECORDS · DELHI · 10+ SAAL", 14, ORANGE_I, 3, True)
+    draw_tracked(d, 56, H - 470, "NAMASTUTE · DELHI · 10+ SAAL", 14, ORANGE_I, 3, True)
     if r > .4:
         al = int(255 * ease((r - .4) / .3))
         d.text((W - 50, H - 90), "तेरा भाई सीधे मौत", font=font(DEVA, 46), fill=WHITE_I + (al,), anchor="rs")

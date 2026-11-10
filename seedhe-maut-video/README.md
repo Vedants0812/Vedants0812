@@ -1,6 +1,6 @@
 # claude × seedhe maut
 
-A terminal/HUD remix of a Seedhe Maut (Azadi Records) music video, styled after the
+A terminal/HUD remix of the Seedhe Maut **Namastute** music video, styled after the
 "Claude loves Seedhe Maut" reference clip.
 
 | file | what |
@@ -13,10 +13,10 @@ A terminal/HUD remix of a Seedhe Maut (Azadi Records) music video, styled after 
 
 | time | scene |
 |---|---|
-| 0:00 | terminal boot: `claude: open ~/seedhe_maut/`, `encore abj × calm · azadi records` |
+| 0:00 | terminal boot: `claude: open ~/seedhe_maut/`, `encore abj × calm · track: namastute` |
 | 0:03 | glowing **म** glyph on a red scanline |
-| 0:06 | `ls ~/seedhe_maut/ --sort hype`: 2 Ka Pahada → Bayaan → न → Nayaab → Lunch Break → `azadi.mp4` overflows at 999% |
-| 0:11 | `play azadi.mp4 --from 0:12 --mode chaos`: glitch tear into the drop |
+| 0:06 | `ls ~/seedhe_maut/ --sort hype`: 2 Ka Pahada → Bayaan → न → Nayaab → Lunch Break → **Namastute** overflows at 999% |
+| 0:11 | `play namastute.mp4 --from 0:12 --mode chaos`: glitch tear into the drop |
 | 0:12–0:48 | MV through 12 render modes, switching every 2 bars: raw, glyph_न, sobel, neon, halftone, bayer_8x8, thermal, mirror, glitch/stutter, echo trails, glyph_म, blood. The HUD shows the live onset counter, BPM, an audio scope and the timecode, plus terminal jokes (`sudo rm -rf ~/fake_rappers`, `git commit -m 'seedhe maut never miss'` …) |
 | 0:48 | `spell 'seedhe maut'`: **स से सीधे · म से मौत**, letters filled with the footage |
 | 0:54 | `render crowd --mode glyph_म` + neon stick figures bouncing on the beat |
@@ -35,4 +35,4 @@ python3 render.py source.mp4 out.mp4 work                  # full render (~2 min
 python3 render.py source.mp4 previews/ work --preview 3,14,50   # stills
 ```
 
-Footage and music © Seedhe Maut / Azadi Records. Fan edit.
+Footage and music © Seedhe Maut. Fan edit.

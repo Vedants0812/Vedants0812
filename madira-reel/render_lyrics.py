@@ -27,7 +27,7 @@ import render_ink as RI   # noqa: E402
 from render_reel import over, over_c, affine, draw_sprite, blur, metal, sm, eio, eout, ein, tsprite, tag_sprite  # noqa: E402
 
 W, H, FPS = 1080, 1920, 24
-T0, DUR = 48.1, 60.0
+T0, DUR = 47.4, 60.8
 NF = int(round(DUR * FPS))
 GW, GH, CELL = RI.GW, RI.GH, RI.CELL
 
@@ -101,6 +101,8 @@ def line_at(ts):
 
 def word_times(ln):
     words = ln["text"].split(" ")
+    if ln.get("wt") and len(ln["wt"]) == len(words):
+        return words, list(ln["wt"])
     span = min(ln["t1"] - ln["t0"], 2.6) * (0.55 if ln["scene"].startswith("v_") else 0.72)
     raw = [ln["t0"] + span * i / max(1, len(words)) for i in range(len(words))]
     on = RI.AU["on"]
@@ -325,7 +327,8 @@ def simulate(path):
             f = sm(kf - int(kf))
             cx_ = keys[k0][0] * (1 - f) + keys[k0 + 1][0] * f
             cy_ = keys[k0][1] * (1 - f) + keys[k0 + 1][1] * f
-            amp = 10 if ts < 96.1 else 22
+            vs = LINES[18]["t0"]
+            amp = 10 if ts < vs else 22
             vx = vx * 0.9 + cx_ * amp * 0.3
             vy = vy * 0.9 + cy_ * amp * 0.3
             for k, t in enumerate(starts):
@@ -335,12 +338,13 @@ def simulate(path):
                         px, py = rr.uniform(GW * 0.05, GW * 0.95), rr.choice([rr.uniform(GH * 0.04, GH * 0.2), rr.uniform(GH * 0.8, GH * 0.96)])
                         dye[..., int(rr.integers(0, 3))] += RI.gauss(px, py, 6) * 1.2
                         RI.radial(vx, vy, px, py, 50, 18)
-            if 90.1 <= ts < 92.6:
-                u = (ts - 90.1) / 1.6
+            sk = LINES[16]["t0"]
+            if sk <= ts < sk + 2.5:
+                u = (ts - sk) / 1.6
                 front = np.clip((u * (GW + 20) - 10 - xs) / 6, 0, 1)
                 dye[..., 0] += skyg * front * 0.10
                 dye[..., 2] += skyg * front * 0.03
-            if ts >= 96.1:
+            if ts >= vs:
                 for o in strong[(strong > t_prev) & (strong <= ts)]:
                     j = int(o * 1000)
                     rr = np.random.default_rng(j)
@@ -349,12 +353,13 @@ def simulate(path):
                     dye[..., j % 3] += RI.gauss(px, py, 2.6 + 1.2 * s) * (0.9 + 0.6 * s)
                     RI.radial(vx, vy, px, py, 120 + 80 * s, 9)
                     RI.swirl(vx, vy, px + 5, py, (1 if j % 2 else -1) * 150, 11)
-            if 104.75 <= ts < 106.12 and t_prev < 105.2 <= ts:
+            pt = LINES[24]["t0"] + 0.4
+            if t_prev < pt <= ts:
                 dye[..., 1] += RI.gauss(GW / 2, GH * 0.42, 9) * 2.0
                 RI.radial(vx, vy, GW / 2, GH * 0.42, 300, 40)
             vx, vy = RI.advect(vx, vx, vy, sdt), RI.advect(vy, vx, vy, sdt)
             dye = RI.advect(dye, vx, vy, sdt)
-            dye = cv2.GaussianBlur(dye, (0, 0), 0.32) * (0.988 if ts < 96 else 0.984)
+            dye = cv2.GaussianBlur(dye, (0, 0), 0.32) * (0.988 if ts < vs else 0.984)
             np.clip(dye, 0, 4, out=dye)
         store[fi] = (np.sqrt(np.clip(dye / 4.0, 0, 1)) * 255 + 0.5).astype(np.uint8)
     store.flush()
@@ -421,7 +426,7 @@ def sc_road(img, ts, fi, ln, rose=False):
         person_on(img, W / 2, H * 0.80, 470)
     words_line(img, ln, ts, "tiro", 72, H * 0.12, maxw=900)
     if ln.get("echo"):
-        echo_text(img, ln["echo"], ts, ln["t0"] + 2.1, H * 0.18)
+        echo_text(img, ln["echo"], ts, ln.get("te", ln["t0"] + 2.2) - 0.1, H * 0.18)
 
 
 def sc_drops(img, ts, fi, ln, ripples=False):
@@ -676,12 +681,12 @@ def sc_lantern(img, ts, fi, ln, frozen_=False):
 
 
 def sc_yuhi(img, ts, fi, ln, store):
-    sc_lantern(img, 70.49, fi, LINES[8], frozen_=True)
+    sc_lantern(img, LINES[8]["t1"] - 0.01, fi, LINES[8], frozen_=True)
     glow_text(img, tw("बहाना", "rozha", 190), AMBER, W / 2, H * 0.70, 1.0, 0.7)
     img *= 0.55
-    a = sm((ts - 70.55) / 0.3)
+    a = sm((ts - ln["t0"] - 0.02) / 0.25)
     glow_text(img, tw("यू ही", "tiro", 84), MOON, W / 2, H * 0.24, a, 0.3)
-    echo_text(img, "(यू ही)", ts, 71.1, H * 0.29, 56)
+    echo_text(img, "(यू ही)", ts, ln["t0"] + 0.5, H * 0.29, 56)
 
 
 def sc_window(img, ts, fi, ln):
@@ -716,7 +721,7 @@ def sc_bloodmoon(img, ts, fi, ln):
     t, u = lt(ln, ts)
     moon(img, W / 2, H * 0.36, 330, blood=0.25 + 0.55 * eio(u), halo=0.7)
     words_line(img, ln, ts, "tiro", 70, H * 0.66, maxw=900)
-    echo_text(img, ln["echo"], ts, ln["t0"] + 2.1, H * 0.74)
+    echo_text(img, ln["echo"], ts, ln.get("te", ln["t0"] + 2.2) - 0.1, H * 0.74)
 
 
 def sc_sky(img, ts, fi, ln):
@@ -728,7 +733,7 @@ def sc_sky(img, ts, fi, ln):
     sp = tw("तेरे नाम", "rozha", 230)
     k = sm((t - 0.1) / 1.2) * (1 - sm((t - 1.9) / 1.0))
     glow_text(img, blur(sp, 2.5), SILVER, W / 2, H * 0.40, 0.55 * k, 0.8)
-    echo_text(img, ln["echo"], ts, ln["t0"] + 2.1, H * 0.56, 64, ROSE)
+    echo_text(img, ln["echo"], ts, ln.get("te", ln["t0"] + 2.2) - 0.1, H * 0.56, 64, ROSE)
 
 
 def sc_pool(img, ts, fi, ln):
@@ -883,19 +888,19 @@ def sc_verse(img, ts, fi, ln):
         sps = [tw(c, "anton", 330) for c in letters]
         ws = [s.shape[1] - 2 * 66 for s in sps]
         x = W / 2 - (sum(ws) + 20 * 3) / 2
-        fade = sm((ts - 106.45) / 0.5)
+        fade = sm((ts - ln["t0"] - 0.3) / 0.5)
         for c, sp, w in zip(letters, sps, ws):
             al = a
             col = MOON
             if c == "L":
                 al = a * (1 - fade)
                 e, g = rim(sp, ROSE, 5)
-                glow_text(img, np.clip(g, 0, 1), ROSE, x + w / 2, H * 0.47, a * fade * (1 - sm((ts - 107.2) / 0.4)), 0)
+                glow_text(img, np.clip(g, 0, 1), ROSE, x + w / 2, H * 0.47, a * fade * (1 - sm((ts - ln["t0"] - 0.9) / 0.4)), 0)
                 col = ROSE
             glow_text(img, sp, col, x + w / 2, H * 0.47, al, 0.3)
             x += w + 20
-        if ts > 107.3:
-            f = sm((ts - 107.3) / 0.5)
+        if ts > T0 + DUR - 0.8:
+            f = sm((ts - (T0 + DUR - 0.8)) / 0.4)
             img *= 1 - 0.75 * f
             sp = tw("मदिरा", "rozha", 150)
             rgb = metal(sp, bevel=4, strength=1.2, lo=WINE * 0.3, mid=ROSE * 0.95, hi=MOON, spec=18)
@@ -954,6 +959,22 @@ POST = {}
 CFG = {}
 
 
+def load_timing(path):
+    """measured line/word times (from the isolated vocal track): list of {idx, t0, t1, words}"""
+    import json
+    global FREEZES, SLOW
+    tm = {d["idx"]: d for d in json.load(open(path))}
+    for ln in LINES:
+        d = tm[ln["idx"]]
+        ln["t0"], ln["te"], ln["wt"] = d["t0"], d["t1"], d["words"]
+    LINES[0]["t0"] = T0
+    for a, b in zip(LINES, LINES[1:]):
+        a["t1"] = b["t0"]
+    LINES[-1]["t1"] = T0 + DUR + 1
+    FREEZES = [(LINES[9]["t0"] + 0.05, LINES[10]["t0"]), (106.12, 1e9)]
+    SLOW = [(LINES[13]["t0"] + 0.4, LINES[14]["t0"])]
+
+
 def load_lyrics(path):
     with open(path, encoding="utf-8") as fh:
         LYRICS[:] = [x.strip() for x in fh if x.strip()]
@@ -993,6 +1014,8 @@ def main():
     audio, out, work, fontdir = sys.argv[1:5]
     os.makedirs(work, exist_ok=True)
     load_lyrics(sys.argv[sys.argv.index("--lyrics") + 1])
+    if "--timing" in sys.argv:
+        load_timing(sys.argv[sys.argv.index("--timing") + 1])
     setup(audio, fontdir)
     CFG["sim"] = os.path.join(work, "lyric_sim.npy")
     if "--reuse-sim" not in sys.argv or not os.path.exists(CFG["sim"]):

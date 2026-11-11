@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-MADIRA (Seedhe Maut, prod. Hurricane) - 60 s lyric reel, song 0:48.1 -> 1:48.1.
+MADIRA (Seedhe Maut, prod. Hurricane) - 61 s lyric reel, song 0:59.3 -> 2:00.3
+(the hook's second pass, the plea, then Calm's verse).
 "Ink of the Night", one scene per lyric line, lyrics as kinetic type.
 
 The lyric text is supplied at run time (--lyrics) and is not part of this repo. Line times follow the song's 12-second / 8-bar blocks found
@@ -9,7 +10,8 @@ in the audio; word times snap to measured vocal onsets.
 usage:
   python3 render_lyrics.py SONG_AUDIO OUT.mp4 WORKDIR FONTDIR --lyrics LYRICS.txt
   python3 render_lyrics.py SONG_AUDIO OUTDIR  WORKDIR FONTDIR --lyrics LYRICS.txt --preview 49,52,55
-LYRICS.txt holds the 26 sung lines of 0:48-1:48, one per line, in the order of LINES.
+LYRICS.txt holds the sung lines, one per line, indexed by LINES[*]["idx"]; --timing gives the
+measured start/end and word times for the lines to show (lines missing from it are skipped).
 """
 import math
 import multiprocessing as mp
@@ -27,7 +29,7 @@ import render_ink as RI   # noqa: E402
 from render_reel import over, over_c, affine, draw_sprite, blur, metal, sm, eio, eout, ein, tsprite, tag_sprite  # noqa: E402
 
 W, H, FPS = 1080, 1920, 24
-T0, DUR = 47.4, 60.8
+T0, DUR = 59.3, 61.0
 NF = int(round(DUR * FPS))
 GW, GH, CELL = RI.GW, RI.GH, RI.CELL
 
@@ -89,7 +91,18 @@ LINES = [
     L(V[5], V[6], 23, "v_shake", key="दम"),
     L(V[6], V[7], 24, "v_pen"),
     L(V[7], 108.2, 25, "v_silent"),
+    L(108.2, 111.0, 26, "v_busy"),
+    L(111.0, 114.0, 27, "v_phone"),
+    L(114.0, 117.0, 28, "v_wound"),
+    L(117.0, 121.0, 29, "v_snake"),
 ]
+
+
+def LI(idx):
+    for ln in LINES:
+        if ln["idx"] == idx:
+            return ln
+    return None
 
 
 def line_at(ts):
@@ -327,7 +340,7 @@ def simulate(path):
             f = sm(kf - int(kf))
             cx_ = keys[k0][0] * (1 - f) + keys[k0 + 1][0] * f
             cy_ = keys[k0][1] * (1 - f) + keys[k0 + 1][1] * f
-            vs = LINES[18]["t0"]
+            vs = LI(18)["t0"]
             amp = 10 if ts < vs else 22
             vx = vx * 0.9 + cx_ * amp * 0.3
             vy = vy * 0.9 + cy_ * amp * 0.3
@@ -338,8 +351,8 @@ def simulate(path):
                         px, py = rr.uniform(GW * 0.05, GW * 0.95), rr.choice([rr.uniform(GH * 0.04, GH * 0.2), rr.uniform(GH * 0.8, GH * 0.96)])
                         dye[..., int(rr.integers(0, 3))] += RI.gauss(px, py, 6) * 1.2
                         RI.radial(vx, vy, px, py, 50, 18)
-            sk = LINES[16]["t0"]
-            if sk <= ts < sk + 2.5:
+            sk = LI(16)["t0"] if LI(16) else -1
+            if sk > 0 and sk <= ts < sk + 2.5:
                 u = (ts - sk) / 1.6
                 front = np.clip((u * (GW + 20) - 10 - xs) / 6, 0, 1)
                 dye[..., 0] += skyg * front * 0.10
@@ -353,7 +366,7 @@ def simulate(path):
                     dye[..., j % 3] += RI.gauss(px, py, 2.6 + 1.2 * s) * (0.9 + 0.6 * s)
                     RI.radial(vx, vy, px, py, 120 + 80 * s, 9)
                     RI.swirl(vx, vy, px + 5, py, (1 if j % 2 else -1) * 150, 11)
-            pt = LINES[24]["t0"] + 0.4
+            pt = LI(24)["t0"] + 0.4
             if t_prev < pt <= ts:
                 dye[..., 1] += RI.gauss(GW / 2, GH * 0.42, 9) * 2.0
                 RI.radial(vx, vy, GW / 2, GH * 0.42, 300, 40)
@@ -681,7 +694,7 @@ def sc_lantern(img, ts, fi, ln, frozen_=False):
 
 
 def sc_yuhi(img, ts, fi, ln, store):
-    sc_lantern(img, LINES[8]["t1"] - 0.01, fi, LINES[8], frozen_=True)
+    sc_lantern(img, LI(8)["t1"] - 0.01, fi, LI(8), frozen_=True)
     glow_text(img, tw("बहाना", "rozha", 190), AMBER, W / 2, H * 0.70, 1.0, 0.7)
     img *= 0.55
     a = sm((ts - ln["t0"] - 0.02) / 0.25)
@@ -881,6 +894,52 @@ def sc_verse(img, ts, fi, ln):
         glow_text(img, tw(line, "notob", 64), MOON, W / 2, H * 0.16, a1, 0.2)
         a2 = sm((ts - times[k]) / 0.1)
         glow_text(img, tw("calm", "anton", 210), ROSE, W / 2, H * 0.27, a2, 0.6)
+    elif sc == "v_busy":
+        m = np.zeros((H, W), np.float32)
+        hx, hy = W / 2, H * 0.70
+        pts = np.array([(hx - 210, hy + 150), (hx - 210, hy - 40), (hx, hy - 190), (hx + 210, hy - 40), (hx + 210, hy + 150)], np.int32)
+        cv2.polylines(m, [pts], True, 1.0, 6, cv2.LINE_AA)
+        img += (blur(m, 0.8) + blur(m, 12) * 0.4)[..., None] * SILVER
+        lit = 0.6 + 0.4 * math.sin(ts * 9)
+        win = np.zeros((H, W), np.float32)
+        cv2.rectangle(win, (int(hx - 60), int(hy - 20)), (int(hx + 60), int(hy + 80)), 1.0, -1)
+        img += (win * lit * 0.8 + blur(win, 30) * lit * 0.8)[..., None] * AMBER
+        words_line(img, ln, ts, "notob", 76, H * 0.30, key="busy", keycol=ROSE, keysize=150, maxw=960, rise=0, g=0.25)
+    elif sc == "v_phone":
+        m = np.zeros((H, W), np.float32)
+        px, py, pw, ph = W / 2, H * 0.66, 300, 560
+        cv2.rectangle(m, (int(px - pw / 2), int(py - ph / 2)), (int(px + pw / 2), int(py + ph / 2)), 1.0, 6, cv2.LINE_AA)
+        cv2.rectangle(m, (int(px - pw / 2 + 30), int(py - ph / 2 + 70)), (int(px + pw / 2 - 30), int(py + 60)), 1.0, 3, cv2.LINE_AA)
+        img += (blur(m, 0.8) + blur(m, 14) * 0.4)[..., None] * SILVER
+        pop = sm((u - 0.5) / 0.15)
+        hrt = np.zeros((H, W), np.float32)
+        hs = 34 * (1 + 0.25 * math.exp(-max(0, u - 0.5) * 12))
+        hc = (int(px - pw / 2 + 60), int(py + 130))
+        cv2.circle(hrt, (hc[0] - int(hs * 0.5), hc[1]), int(hs * 0.55), 1.0, -1, cv2.LINE_AA)
+        cv2.circle(hrt, (hc[0] + int(hs * 0.5), hc[1]), int(hs * 0.55), 1.0, -1, cv2.LINE_AA)
+        cv2.fillConvexPoly(hrt, np.array([(hc[0] - int(hs * 1.02), hc[1] + 6), (hc[0] + int(hs * 1.02), hc[1] + 6), (hc[0], hc[1] + int(hs * 1.3))], np.int32), 1.0, cv2.LINE_AA)
+        img += (hrt * pop + blur(hrt, 14) * pop * 0.6)[..., None] * ROSE
+        words_line(img, ln, ts, "notob", 76, H * 0.26, maxw=960, rise=0, g=0.25)
+    elif sc == "v_wound":
+        xs = np.linspace(W * 0.12, W * 0.88, 50)
+        pts = [(x, H * 0.66 + 26 * math.sin(x / 23) + 14 * math.sin(x / 7)) for x in xs]
+        stroke(img, pts, ROSE, 7, 1.0, 0.7)
+        heal = sm((u - 0.35) / 0.5)
+        n = int(heal * 9)
+        for k in range(n):
+            x, y = pts[5 + k * 5]
+            stroke(img, [(x - 22, y - 26), (x + 22, y + 26)], SILVER, 4, 0.9, 0.3)
+        words_line(img, ln, ts, "notob", 76, H * 0.30, key="heal", keycol=ROSE, keysize=150, maxw=960, rise=0, g=0.25)
+    elif sc == "v_snake":
+        ph_ = ht(ts) * 3
+        xs = np.linspace(-W * 0.1 + (t * 260) % (W * 0.3), W * 1.1, 70)
+        pts = [(x, H * 0.66 + 70 * math.sin(x / 70 - ph_)) for x in xs]
+        stroke(img, pts, SILVER, 12, 0.9, 0.4)
+        hx, hy = pts[-1]
+        g = np.zeros((H, W), np.float32)
+        cv2.circle(g, (int(min(W - 30, hx)), int(hy)), 16, 1.0, -1, cv2.LINE_AA)
+        img += blur(g, 1.5)[..., None] * ROSE
+        words_line(img, ln, ts, "notob", 76, H * 0.30, key="ध्यान", keycol=ROSE, keysize=130, maxw=960, rise=0, g=0.25)
     elif sc == "v_silent":
         a = sm(t / 0.08)
         words_line(img, ln, ts, "notob", 64, H * 0.30, maxw=960, rise=0, g=0.2)
@@ -888,7 +947,7 @@ def sc_verse(img, ts, fi, ln):
         sps = [tw(c, "anton", 330) for c in letters]
         ws = [s.shape[1] - 2 * 66 for s in sps]
         x = W / 2 - (sum(ws) + 20 * 3) / 2
-        fade = sm((ts - ln["t0"] - 0.3) / 0.5)
+        fade = sm((ts - 106.0) / 0.4)
         for c, sp, w in zip(letters, sps, ws):
             al = a
             col = MOON
@@ -899,8 +958,8 @@ def sc_verse(img, ts, fi, ln):
                 col = ROSE
             glow_text(img, sp, col, x + w / 2, H * 0.47, al, 0.3)
             x += w + 20
-        if ts > T0 + DUR - 0.8:
-            f = sm((ts - (T0 + DUR - 0.8)) / 0.4)
+        if False:
+            f = 0.0
             img *= 1 - 0.75 * f
             sp = tw("मदिरा", "rozha", 150)
             rgb = metal(sp, bevel=4, strength=1.2, lo=WINE * 0.3, mid=ROSE * 0.95, hi=MOON, spec=18)
@@ -939,6 +998,14 @@ def render_frame(fi, store):
         SCENES[sc](img, ts, fi, ln)
     if sc == "under":
         pass
+    if ts > T0 + DUR - 0.8:
+        f = sm((ts - (T0 + DUR - 0.8)) / 0.4)
+        img *= 1 - 0.8 * f
+        sp = tw("मदिरा", "rozha", 150)
+        rgb = metal(sp, bevel=4, strength=1.2, lo=WINE * 0.3, mid=ROSE * 0.95, hi=MOON, spec=18)
+        over_c(img, rgb, sp * f, W / 2, H * 0.47)
+        cr = tag_sprite("SEEDHE MAUT · PROD. HURRICANE · DL91 FM", 20)
+        over_c(img, MOON, cr * 0.6 * f, W / 2, H * 0.47 + 130)
     # cut accent: a soft wine flash on each new line
     k = ts - ln["t0"]
     if k < 0.10 and ln is not LINES[0] and sc not in ("yuhi", "v_silent"):
@@ -964,6 +1031,7 @@ def load_timing(path):
     import json
     global FREEZES, SLOW
     tm = {d["idx"]: d for d in json.load(open(path))}
+    LINES[:] = [ln for ln in LINES if ln["idx"] in tm]
     for ln in LINES:
         d = tm[ln["idx"]]
         ln["t0"], ln["te"], ln["wt"] = d["t0"], d["t1"], d["words"]
@@ -971,8 +1039,9 @@ def load_timing(path):
     for a, b in zip(LINES, LINES[1:]):
         a["t1"] = b["t0"]
     LINES[-1]["t1"] = T0 + DUR + 1
-    FREEZES = [(LINES[9]["t0"] + 0.05, LINES[10]["t0"]), (106.12, 1e9)]
-    SLOW = [(LINES[13]["t0"] + 0.4, LINES[14]["t0"])]
+    FREEZES = [(LI(9)["t0"] + 0.05, LI(9)["t1"])] if LI(9) else []
+    FREEZES.append((106.12, 107.45))
+    SLOW = [(LI(13)["t0"] + 0.4, LI(13)["t1"])] if LI(13) else []
 
 
 def load_lyrics(path):

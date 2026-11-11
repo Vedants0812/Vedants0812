@@ -1,6 +1,6 @@
 # MADIRA: 60-second lyric reel
 
-**Main cut: `madira_lyric_reel_60s_9x16.mp4`.** It is 1080 × 1920 at 24 fps, uses the song's audio from 0:47.4 (just before the first sung line) to 1:48.2,
+**Main cut: `madira_lyric_reel_60s_9x16.mp4`.** It is 1080 × 1920 at 24 fps, uses the song's audio from 0:59.3 (the hook's second pass) to 2:00.3,
 and has 26 scenes, one per sung line, with the lyrics as kinetic Devanagari type. Its theme, "Ink of the Night", uses
 midnight indigo, moon-silver, wine and crimson. Line timings follow the song's 12-second blocks, and each word is snapped to
 a detected vocal onset.

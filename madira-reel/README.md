@@ -1,3 +1,15 @@
+# MADIRA: 60-second lyric reel
+
+**Main cut: `madira_lyric_reel_60s_9x16.mp4`.** It is 1080 × 1920 at 24 fps, uses the song's audio from 0:48.1 to 1:48.1,
+and has 26 scenes, one per sung line, with the lyrics as kinetic Devanagari type. Its theme, "Ink of the Night", uses
+midnight indigo, moon-silver, wine and crimson. Line timings follow the song's 12-second blocks, and each word is snapped to
+a detected vocal onset.
+
+`render_lyrics.py` re-renders it (about 10 minutes on 4 cores). The lyric text is not stored in this repo; pass it with
+`--lyrics LYRICS.txt` (26 lines, in order).
+
+---
+
 # MADIRA: 60-second reel, "Ink of the Night"
 
 **Main cut: `madira_ink_reel_60s_9x16.mp4`.** It is 1080 × 1920 at 24 fps and uses the song's audio from **0:48.1, where the vocals

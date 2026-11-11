@@ -29,7 +29,7 @@ import render_reel as RR  # noqa: E402
 from render_reel import over, over_c, affine, draw_sprite, blur, sm, eout, tsprite  # noqa: E402
 
 W, H, FPS = 1920, 1080, 24
-T0, T1 = 13.6, 90.2
+T0, T1 = 13.9, 92.4
 NF = int(round((T1 - T0) * FPS))
 
 
@@ -73,7 +73,7 @@ def load(lyrics, timing):
         txt = re.sub(r"(\s*\([^)]*\))+\s*$", "", raw)
         words = txt.split()
         LINES.append(dict(idx=d["idx"], t0=d["t0"], te=d["t1"], wt=d["words"], words=words, ads=ads,
-                          chorus=d["idx"] >= len(lyr) - 4))
+                          chorus="boom" in raw.lower()))
     for a, b in zip(LINES, LINES[1:]):
         a["t1"] = b["t0"]
     LINES[-1]["t1"] = T1 + 1
@@ -342,7 +342,7 @@ def intro(img, t):
 
 
 def outro(img, t):
-    f = sm((t - 89.6) / 0.4)
+    f = sm((t - 91.8) / 0.4)
     img *= 1 - 0.97 * f
     sp = tsprite("BOOM SHAKA", F["anton"], 230, pad=30)
     over_c(img, BLAZE, sp * f, W / 2, H / 2 - 40)
@@ -362,7 +362,7 @@ def render_frame(fi):
         verse(img, t, ln)
     if ln is not None and 0 <= t - ln["t0"] < 2 / FPS:
         img = img * 0.5 + BLAZE * 0.5
-    if t > 89.6:
+    if t > 91.8:
         outro(img, t)
     # camera: beat punch + bass shake (+ hard shake on "room" lines)
     z = 1 + 0.025 * pulse(AU["beats"], t, 0.09) + 0.03 * pulse(AU["downs"], t, 0.12)

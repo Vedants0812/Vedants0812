@@ -1,4 +1,28 @@
-# MADIRA: 60-second reel
+# MADIRA: 60-second reel, "Ink of the Night"
+
+**Main cut: `madira_ink_reel_60s_9x16.mp4`.** It is 1080 × 1920 at 24 fps and uses the song's audio from **0:48.1, where the vocals
+enter, to 1:48.1**, the silence at the hand-off. Nothing before 0:48 is used.
+
+Its theme is our own, not the reference's: there are no clocks, gears or gold. It is ink smoke under a moon, in midnight indigo,
+moon-silver, wine and crimson. The ink is a small fluid simulation keyed to the song's beats, vocal onsets and bass hits.
+
+| Song time | What happens |
+|---|---|
+| 0:48.1 | The vocals enter and a drop of wine ink blooms over the moon; मदिरा forms out of ink, then dissolves (the bass is still out) |
+| 0:58.5 | The bass enters. Two ink silhouettes face each other, moon-silver and wine; their smoke reaches across and mixes on every downbeat while petals fall |
+| 1:10.5 | The pause: everything holds, with नशा |
+| 1:11.9 | The ink spirals into a vortex |
+| 1:15.0 | Calm's verse bursts in: an ink splash on every strong vocal hit, and shockwaves from the moon on bass hits |
+| 1:21.0 | The 3-second break: a total freeze, with ठहरो |
+| 1:24.0 | A crimson rose sheds a petal on every downbeat, each petal bleeding into ink, while the moon slowly turns blood-red |
+| 1:46.1 | The hand-off silence: a freeze and the end mark |
+
+`render_ink.py` re-renders it (about 8 minutes on 4 cores; `--preview 52,64,92` renders stills).
+The on-screen words (मदिरा, नशा, ठहरो) are thematic words, not lyrics. Real lyric lines can be added once the lyrics are supplied.
+
+---
+
+## Earlier cut (archive theme, 0:22–1:22.5)
 
 The first minute of the Seedhe Maut **MADIRA** re-edit (prod. Hurricane, DL91 FM), in the
 "Archive of Forgotten Moments" art direction. It is 1080 × 1920 at 24 fps and covers 0:22.0 to 1:22.5 of the song.
